@@ -1,6 +1,11 @@
 @extends ('layouts/app')
 
+@section('title')
+A propos - @parent
+@endsection
+
 @section('content')
+<div class="container">
     <h1>Hello {{ $name }}</h1>
 
     <ul>
