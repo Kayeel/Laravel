@@ -1,6 +1,7 @@
 <?php
 
-use Facade\Ignition\Exceptions\ViewException;
+use App\Http\Controllers\PropertyController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
@@ -27,38 +28,33 @@ Route::get('/a-propos', function () {
         'bibis' => [1, 2, 3, 4],
     ]);
 });
-            // AFFICHER LES ANNONCES
 
-Route::get('nos-annonces', function(){
+Route::get('/hello/{nom?}', function ($nom = 'Fiorella') {
+    return "<h1>Hello $nom</h1>";
+})->where('nom', '.{2,}'); // Le nom doit faire 2 caractères minimum
 
-    $properties = DB::select('select * from properties where sold = :sold',[
-        'sold' => 0,
-    ]);
+// Afficher les annonces
+Route::get('/nos-annonces', [PropertyController::class, 'index']);
+Route::get('/los-annoncas', [PropertyController::class, 'index']);
 
-    $properties = DB::table('properties')
-    ->where('sold', 0)->where('sold', '=', 1, 'or')->get();
+// On va créer une route pour voir UNE seule annonce
+// La route ressemble à cela : /annonce/2
+// On pourra donc récupérer l'id de l'annonce en dynamique
+// Avec cette ID, on doit faire la bonne requête (select ... where ...)
+// On crée une nouvelle vue properties/show
+// On affiche l'annonce (Titre, prix, description) sur cette page
 
-    return View('properties/index', [
-        'properties' => $properties,
-    ]);
-});
+Route::get('/annonce/{id}', [PropertyController::class, 'show'])->whereNumber('id');
+// On s'assure que $id est seulement un nombre
 
+// On affiche le formulaire
+// use App\Http\Controllers\PropertyController;
+Route::get('/annonce/creer', [PropertyController::class, 'create']);
 
-//VOIR ANNONCE nos-annonce/2
+// use Illuminate\Http\Request;
+Route::post('/annonce/creer', [PropertyController::class, 'store']);
 
-Route::get('/annonce/{id}', function ($id) {
-    // $property = DB::table('properties')->where('id', $id)->get()->first();
-    $property = DB::table('properties')->find($id);
+Route::get('/annonce/editer/{id}', [PropertyController::class, 'edit']);
+Route::put('/annonce/editer/{id}', [PropertyController::class, 'update']);
 
-    if(! $property){
-        abort(404); 
-        // on renvoie une 404
-    }
-  
-    return view('properties/show', ['property' => $property]);
-})->whereNumber('id');
-
-Route::get('/annonce/creer', function () {
-    return view('properties/create');
-   
-});
+Route::delete('/annonce/{id}', [PropertyController::class, 'destroy']);
